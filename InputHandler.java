@@ -37,15 +37,10 @@ public class InputHandler {
 
 				case KeyEvent.KEY_PRESSED -> {
 					brush = ((KeyEvent) event).getKeyChar()-48;
-					brush = switch(brush){
-						case 2 -> 3;
-						case 3 -> 2;
+					brush = switch (brush){
 						default -> brush;
 					};
-					if (brush < 0){
-						brush = 0;
-					}
-					if (brush > 9){
+					if (brush < 0 || brush > 9){
 						brush = 0;
 					}
 				}

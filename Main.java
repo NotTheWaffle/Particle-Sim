@@ -2,11 +2,11 @@ import java.util.concurrent.locks.LockSupport;
 
 public class Main {
 	public static void main(String[] args) {
-		int gridSize = 1024;
+		int gridSize = 256;
 		int gameSize = 1024;
 		
 		for (int i = 0; i < 1; i++){
-			new GameRunner(new Game2(gridSize,gameSize), 60, 60).start();
+			new GameRunner(new Game2(gridSize,gameSize), 60, 120).start();
 		}
 	}
 	public static class GameRunner extends Thread{
@@ -26,7 +26,7 @@ public class Main {
 		@Override
 		public void run(){
 			double tpf = tps/fps;
-			System.out.println(game.getClass()+" running on thread "+Thread.currentThread().getName()+" with "+fps+"FPS and "+tps+" TPS ("+tpf+"TPF)");
+			System.out.println(game.getClass().getName()+" running on "+Thread.currentThread().getName()+" with "+fps+"FPS and "+tps+" TPS ("+tpf+"TPF)");
 			Window window = new Window(game);
 			double tickDeficit = 0;
 
