@@ -14,6 +14,11 @@ public class InputHandler {
 	public int brush = 1;
 	public int imdBrush = brush;
 
+	public double fps;
+	public long logicTime;
+	public long renderTime;
+	public long sleepTime;
+
 	public InputHandler(Game game) {
 		this.game = game;
 		this.unhandled = new ConcurrentLinkedQueue<>();

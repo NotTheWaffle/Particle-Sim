@@ -1,6 +1,10 @@
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
+import java.util.Arrays;
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class Game2 extends Game{
 
@@ -12,6 +16,8 @@ public class Game2 extends Game{
 	public final int radius = 8;
 
 	public int checksum = 0;
+
+	public Random random = ThreadLocalRandom.current();
 
 	public int[][] grid;
 	public boolean[][] updated;
@@ -27,25 +33,29 @@ public class Game2 extends Game{
 		return new Color(i);
 	}
 
-	public Game2(int width, int height){
-		super(1024,1024);
-		tileWidth = gameHeight/width;
+	public Game2(int gridSize, int gameSize){
+		super(gameSize,gameSize);
+		tileWidth = gameHeight/gridSize;
 		
-		this.gridWidth = width;
-		this.gridHeight = height;
+		this.gridWidth = gridSize;
+		this.gridHeight = gridSize;
 		this.grid = new int[gridHeight][gridWidth];
+		this.updated = new boolean[gridHeight][gridWidth];
 	}
 	
 	@Override
 	public void tick(){
 		//0 air, 1 sand, 2 wall, 3 water, 4 gas, 5 concrete, 6 wood, 7 fire, 8 acid, 9 concrete powder
-		updated = new boolean[gridHeight][gridWidth];
+		for (int y = 0; y < gridHeight; y++) {
+			Arrays.fill(updated[y], false);
+		}
 		for (int x = 0; x < gridWidth; x++){
 			for (int y = 0; y < gridHeight; y++){
-				if (updated[y][x]) continue;
+				if (updated[y][x] || grid[y][x]==0) continue;
 				int dir = 1;
-				if (Math.random()>.5) dir = -1;
+				if (random.nextDouble()>.5) dir = -1;
 				int self = grid[y][x];
+				
 				if (self == 1){
 					if (attemptLessDenseSwap(x, y, self, x, y+1)){
 					} else if (attemptLessDenseSwap(x, y, self, x+dir, y+1)){
@@ -71,15 +81,15 @@ public class Game2 extends Game{
 								continue;
 							}
 							int nb = tileAt(x+dx,y+dy);
-							if (tileAt(x+dx, y+dy) == 6 && Math.random() >= .5){
+							if (tileAt(x+dx, y+dy) == 6 && random.nextDouble() >= .5){
 								grid[y+dy][x+dx] = 7;
 								updated[y+dy][x+dx] = true;
 							}
 							if (nb == 7) neighbors++;
 						}
 					}
-					if (neighbors < 5 && Math.random()>=.5){
-						if (Math.random() >= .99) {
+					if (neighbors < 5 && random.nextDouble()>=.5){
+						if (random.nextDouble() >= .99) {
 							grid[y][x] = 4;
 						} else {
 							grid[y][x] = 0;
@@ -120,7 +130,6 @@ public class Game2 extends Game{
 						}
 					}
 				}
-				updated[y][x] = true;
 			}
 		}
 	}
@@ -130,6 +139,7 @@ public class Game2 extends Game{
 			grid[y1][x1] = other;
 			grid[y2][x2] = self;
 			updated[y2][x2] = true;
+			updated[y1][x1] = true;
 			return true;
 		}
 		return false;
@@ -140,6 +150,7 @@ public class Game2 extends Game{
 			grid[y1][x1] = other;
 			grid[y2][x2] = self;
 			updated[y2][x2] = true;
+			updated[y1][x1] = true;
 			return true;
 		}
 		return false;
@@ -163,15 +174,16 @@ public class Game2 extends Game{
 		int y = mouseY/tileWidth;
 		for (int dx = -radius; dx <= radius; dx++){
 			for (int dy = -radius; dy <= radius; dy++){
+				if (dx * dx + dy * dy >= radius * radius){
+					continue;
+				}
 				int ax = x+dx;
 				int ay = y+dy;
 				if (ax < 0 || ax >= gridWidth || ay < 0 || ay >= gridHeight){
 					continue;
 				}
-				if (dx * dx + dy * dy >= radius * radius){
-					continue;
-				}
 				if (value == 0 || value == 2 || grid[ay][ax] == 0){
+					updated[ay][ax] = true;
 					grid[ay][ax] = value;
 				}
 			}
@@ -187,6 +199,14 @@ public class Game2 extends Game{
 				render(x,y,g2d);
 			}
 		}
+		g2d.setColor(Color.white);
+		g2d.setFont(new Font("Monospaced", 0, 16));
+		double totalTime = (inputHandler.logicTime+inputHandler.renderTime+inputHandler.sleepTime);
+		g2d.drawString(String.format("%3.0f",inputHandler.fps),0,g2d.getFont().getSize());
+		g2d.drawString(String.format("logic  (us): %3.3f%%",inputHandler.logicTime*100.0/totalTime),0,2*g2d.getFont().getSize());
+		g2d.drawString(String.format("render (us): %3.1f%%",inputHandler.renderTime*100.0/totalTime),0,3*g2d.getFont().getSize());
+		g2d.drawString(String.format("sleep  (us): %3.1f%%",inputHandler.sleepTime*100.0/totalTime),0,4*g2d.getFont().getSize());
+		g2d.drawString(String.format("total  (s):%5.1f",totalTime/1_000_000_000),0 , 5 * g2d.getFont().getSize());
 	}
 	public void render(int x, int y, Graphics2D g2d){
 		int value = grid[y][x];
