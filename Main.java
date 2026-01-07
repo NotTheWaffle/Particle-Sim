@@ -1,13 +1,13 @@
+
 import java.util.concurrent.locks.LockSupport;
+
 
 public class Main {
 	public static void main(String[] args) {
 		int gridSize = 256;
 		int gameSize = 1024;
-		
-		for (int i = 0; i < 1; i++){
-			new GameRunner(new Game2(gridSize,gameSize), 60, 120).start();
-		}
+
+		new GameRunner(new Game3(gridSize, gameSize), 60, 600).start();
 	}
 	public static class GameRunner extends Thread{
 		private final Game game;
@@ -29,6 +29,10 @@ public class Main {
 			System.out.println(game.getClass().getName()+" running on "+Thread.currentThread().getName()+" with "+fps+"FPS and "+tps+" TPS ("+tpf+"TPF)");
 			Window window = new Window(game);
 			double tickDeficit = 0;
+
+			game.fill(64,32,(byte)1,10);
+
+			game.fill(64,64,(byte)8,10);
 
 			long frameLength = (int) (1_000_000_000/fps);
 

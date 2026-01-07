@@ -11,8 +11,8 @@ public class InputHandler {
 	public int mouseY;
 	public int mouseDown;
 
-	public int brush = 1;
-	public int imdBrush = brush;
+	public byte brush = 1;
+	public byte imdBrush = brush;
 
 	public double fps;
 	public long logicTime;
@@ -36,13 +36,14 @@ public class InputHandler {
 			switch (event.getID()) {
 
 				case KeyEvent.KEY_PRESSED -> {
-					brush = ((KeyEvent) event).getKeyChar()-48;
+					brush = (byte) (((KeyEvent) event).getKeyChar()-48);
 					brush = switch (brush){
 						default -> brush;
 					};
 					if (brush < 0 || brush > 9){
 						brush = 0;
 					}
+					
 				}
 
 				case KeyEvent.KEY_RELEASED -> {}
@@ -57,11 +58,11 @@ public class InputHandler {
 					if (mouseDown == 3){
 						imdBrush = 0;
 					}
-
-					game.fill(mouseX, mouseY, imdBrush);
 				}
 
-				case MouseEvent.MOUSE_RELEASED -> {}
+				case MouseEvent.MOUSE_RELEASED -> {
+					mouseDown = 0;
+				}
 
 				case MouseEvent.MOUSE_MOVED -> {}
 
@@ -73,8 +74,6 @@ public class InputHandler {
 					MouseEvent e = (MouseEvent) event;
 					mouseX = e.getX();
 					mouseY = e.getY();
-
-					game.fill(mouseX, mouseY, imdBrush);
 				}
 
 				case MouseEvent.MOUSE_WHEEL -> {}

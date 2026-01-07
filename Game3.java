@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class Game2 extends Game{
+public class Game3 extends Game{
 
 	public final int tileWidth;
 
@@ -17,20 +17,20 @@ public class Game2 extends Game{
 	
 	public final Random random = ThreadLocalRandom.current();
 
-	public final int[][] grid;
+	public final byte[][] grid;
 	public final boolean[][] updated;
 	
-	public static final int AIR = 0;
-	public static final int SAND = 1;
-	public static final int WATER = 2;
-	public static final int WALL = 3;
-	public static final int SMOKE = 4;
-	public static final int STONE = 5;
-	public static final int WOOD = 6;
-	public static final int FIRE = 7;
-	public static final int ACID = 8;
-	public static final int POWDER = 9;
-	public static final int CONCRETE = 10;
+	public static final byte AIR = 0;
+	public static final byte SAND = 1;
+	public static final byte WATER = 2;
+	public static final byte WALL = 3;
+	public static final byte SMOKE = 4;
+	public static final byte STONE = 5;
+	public static final byte WOOD = 6;
+	public static final byte FIRE = 7;
+	public static final byte ACID = 8;
+	public static final byte POWDER = 9;
+	public static final byte CONCRETE = 10;
 
 	// c5a364 
 	//								 0 air, 	1 sand, 	2 water, 	3 wall, 	4 smoke,	5 stone,	6 sawdust, 	7 fire,		8 acid,		9 powder, 	10 concrete,11 tnt
@@ -40,13 +40,13 @@ public class Game2 extends Game{
 	//steams and stuff :sob:
 	public final Color[] colors = Arrays.stream(hexCodes).mapToObj(Color::new).toArray(Color[]::new);
 	
-	public Game2(int gridSize, int gameSize){
+	public Game3(int gridSize, int gameSize){
 		super(gameSize,gameSize);
 		tileWidth = gameHeight/gridSize;
 		
 		this.gridWidth = gridSize;
 		this.gridHeight = gridSize;
-		this.grid = new int[gridHeight][gridWidth];
+		this.grid = new byte[gridHeight][gridWidth];
 		this.updated = new boolean[gridHeight][gridWidth];
 	}
 	
@@ -56,16 +56,20 @@ public class Game2 extends Game{
 			Arrays.fill(updated[y], false);
 		}
 		if (inputHandler.mouseDown != 0){
-			
 			fill(inputHandler.mouseX/tileWidth, inputHandler.mouseY/tileWidth, inputHandler.imdBrush, radius);
 		}
-		for (int x = 0; x < gridWidth; x++){
-			for (int y = 0; y < gridHeight; y++){
-				int self = grid[y][x];
+		for (int i = 0; i < gridWidth; i++){
+			int x = (1*i)%gridWidth;
+			for (int j = 0; j < gridHeight; j++){
+				int y = (1*j)%gridHeight;
+
+				int xDir = random.nextBoolean() ? 1 : -1;
+				
+
+				byte self = grid[y][x];
 				if (updated[y][x] || self == AIR  || self == WALL || self == CONCRETE) continue;
 				
-				int xDir = random.nextBoolean() ? 1 : -1;
-
+				
 				switch (self) {
 					case SAND -> {
 						if (attemptLessDenseSwap(x, y, self, x, y+1)){}
@@ -96,7 +100,7 @@ public class Game2 extends Game{
 								if (dx == 0 && dy == 0){
 									continue;
 								}
-								int neighbor = tileAt(x+dx,y+dy);
+								byte neighbor = tileAt(x+dx,y+dy);
 								if (neighbor == WOOD && chance(.5)){
 									setTile(x+dx, y+dy, FIRE);
 								}
@@ -120,7 +124,7 @@ public class Game2 extends Game{
 									if (dx == 0 && dy == 0){
 										continue;
 									}
-									int nb = tileAt(x+dx, y+dy);
+									byte nb = tileAt(x+dx, y+dy);
 									if (nb != WALL && nb != AIR && nb != ACID && !updated[y+dy][x+dx]){
 										setTile(x+dx, y+dy, AIR);
 										setTile(x, y, AIR);
@@ -139,7 +143,7 @@ public class Game2 extends Game{
 									if (dx == 0 && dy == 0){
 										continue;
 									}
-									int nb = tileAt(x+dx, y+dy);
+									byte nb = tileAt(x+dx, y+dy);
 									if (nb == WATER){
 										setTile(x, y, CONCRETE);
 									}
@@ -158,8 +162,8 @@ public class Game2 extends Game{
 		return random.nextDouble() < c;
 	}
 
-	private boolean attemptLessDenseSwap(int x1, int y1, int self, int x2, int y2){
-		int other = tileAt(x2, y2);
+	private boolean attemptLessDenseSwap(int x1, int y1, byte self, int x2, int y2){
+		byte other = tileAt(x2, y2);
 		if (lessDense(other, self)){
 			grid[y1][x1] = other;
 			grid[y2][x2] = self;
@@ -170,8 +174,8 @@ public class Game2 extends Game{
 		return false;
 	}
 
-	private boolean attemptMoreDenseSwap(int x1, int y1, int self, int x2, int y2){
-		int other = tileAt(x2, y2);
+	private boolean attemptMoreDenseSwap(int x1, int y1, byte self, int x2, int y2){
+		byte other = tileAt(x2, y2);
 		if (moreDense(other, self)){
 			grid[y1][x1] = other;
 			grid[y2][x2] = self;
@@ -181,23 +185,23 @@ public class Game2 extends Game{
 		}
 		return false;
 	}
-	private boolean lessDense(int otherValue, int myValue){
+	private boolean lessDense(byte otherValue, byte myValue){
 		return mobile[otherValue] && density[otherValue] < density[myValue];
 	}
-	private boolean moreDense(int otherValue, int myValue){
+	private boolean moreDense(byte otherValue, byte myValue){
 		return mobile[otherValue] && density[otherValue] > density[myValue];
 	}
-	private int tileAt(int x, int y){
+	private byte tileAt(int x, int y){
 		if (x < 0 || x >= gridWidth || y < 0 || y >= gridHeight){
 			return WALL;
 		}
 		return grid[y][x];
 	}
-	private void setTile(int x, int y, int value){
+	private void setTile(int x, int y, byte value){
 		grid[y][x] = value;
 		updated[y][x] = true;
 	}
-	private void trySetTile(int x, int y, int value){
+	private void trySetTile(int x, int y, byte value){
 		if (x < 0 || x >= gridWidth || y < 0 || y >= gridHeight || grid[y][x] == WALL){
 			return;
 		}
@@ -241,7 +245,9 @@ public class Game2 extends Game{
 	public void render(int x, int y, Graphics2D g2d){
 		int value = grid[y][x];
 		if (value == 0) return;
-		g2d.setColor(colors[value]);
+		if (value >= 0 && value < colors.length){
+			g2d.setColor(colors[value]);
+		}
 		g2d.fillRect(x*tileWidth, y*tileWidth, tileWidth, tileWidth);
 	}
 }

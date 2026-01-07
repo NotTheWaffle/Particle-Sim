@@ -98,7 +98,7 @@ public class Game1 extends Game{
 			}
 		}
 	}
-	public void fill(int mouseX, int mouseY, int value){
+	public void fill(int mouseX, int mouseY, byte value, int radius){
 		int x = mouseX/tileWidth;
 		int y = mouseY/tileWidth;
 		value = switch(value){

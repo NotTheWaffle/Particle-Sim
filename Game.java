@@ -15,6 +15,6 @@ public abstract class Game {
 		this.gameHeight = height;
 	}
 	public abstract void tick();
-	public abstract void fill(int x, int y, int type);
+	public abstract void fill(int x, int y, byte type, int radius);
 	public abstract void updateFrame(Graphics2D g2d);
 }
