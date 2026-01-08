@@ -1,20 +1,22 @@
-
 import java.awt.Graphics2D;
 
-public abstract class Game {
-	public final InputHandler inputHandler;
+public class Game {
+	public final Input input;
 
-	public boolean paused;
-	
-	public final int gameWidth;
-	public final int gameHeight;
+	public final int width;
+	public final int height;
 
 	protected Game(int width, int height){
-		inputHandler = new InputHandler(this);
-		this.gameWidth = width;
-		this.gameHeight = height;
+		input = new Input(this);
+		this.width = width;
+		this.height = height;
 	}
-	public abstract void tick();
-	public abstract void fill(int x, int y, byte type, int radius);
-	public abstract void updateFrame(Graphics2D g2d);
+	public String name(){
+		return "Default";
+	}
+	public void tick(){
+		
+	}
+	public void updateFrame(Graphics2D g2d){
+	}
 }

@@ -1,6 +1,5 @@
 
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.Graphics2D;
 import java.util.Arrays;
 import java.util.Random;
@@ -13,7 +12,7 @@ public class Game3 extends Game{
 	public final int gridWidth;
 	public final int gridHeight;
 
-	public final int radius = 8;
+	public final int radius = 4;
 	
 	public final Random random = ThreadLocalRandom.current();
 
@@ -39,15 +38,19 @@ public class Game3 extends Game{
 	public final boolean[] mobile = {true, 		true, 		true, 		false,		true, 		true, 		true, 		true, 		true, 		true, 		false,		false};
 	//steams and stuff :sob:
 	public final Color[] colors = Arrays.stream(hexCodes).mapToObj(Color::new).toArray(Color[]::new);
+
+	public byte brush;
 	
-	public Game3(int gridSize, int gameSize){
-		super(gameSize,gameSize);
-		tileWidth = gameHeight/gridSize;
+	public Game3(int width, int height){
+		// uses bytes, not ints
+		super(width, height);
+		tileWidth = 1;
 		
-		this.gridWidth = gridSize;
-		this.gridHeight = gridSize;
+		this.gridWidth = width;
+		this.gridHeight = height;
 		this.grid = new byte[gridHeight][gridWidth];
 		this.updated = new boolean[gridHeight][gridWidth];
+		brush = 1;
 	}
 	
 	@Override
@@ -55,8 +58,17 @@ public class Game3 extends Game{
 		for (int y = 0; y < gridHeight; y++) {
 			Arrays.fill(updated[y], false);
 		}
-		if (inputHandler.mouseDown != 0){
-			fill(inputHandler.mouseX/tileWidth, inputHandler.mouseY/tileWidth, inputHandler.imdBrush, radius);
+		for (char i = '0'; i <= '9'; i++){
+			if (input.keys[i]){
+				brush = (byte)(i-'0');
+			}
+		}
+		byte imdBrush = brush;
+		if ((input.mouseDown & Input.MOUSE_RIGHT) > 0){
+			imdBrush = 0;
+		}
+		if (input.mouseDown > 0){
+			fill(input.mouseX/tileWidth, input.mouseY/tileWidth, imdBrush, radius);
 		}
 		for (int i = 0; i < gridWidth; i++){
 			int x = (1*i)%gridWidth;
@@ -81,17 +93,17 @@ public class Game3 extends Game{
 					}
 					case WALL -> {}
 					case SMOKE -> {
-						int yDir = chance (.25) ? 1 : -1;
-						if ((attemptMoreDenseSwap(x, y, self, x+xDir, y+yDir))){}
+						if ((attemptMoreDenseSwap(x, y, self, x+xDir, y-1))){}
+						else if (attemptMoreDenseSwap(x, y, self, x, y-1)){}
 						else if (attemptMoreDenseSwap(x, y, self, x+xDir, y)){}
 					}
 					case STONE -> {
 						if (attemptLessDenseSwap(x, y, self, x, y+1)){}
-						else if (attemptLessDenseSwap(x, y, self, x+xDir, y+3)){}
+						else if ((lessDense(tileAt(x+xDir, y),self) && lessDense(tileAt(x+xDir, y+1),self) && lessDense(tileAt(x+xDir, y+2),self)) && attemptLessDenseSwap(x, y, self, x+xDir, y+3)){}
 					}
 					case WOOD -> {
 						if (attemptLessDenseSwap(x, y, self, x, y+1)){}
-						else if (attemptLessDenseSwap(x, y, self, x+2*xDir, y+1)){}
+						else if (tileAt(x+xDir, y) == AIR && attemptLessDenseSwap(x, y, self, x+2*xDir, y+1)){}
 						else if (attemptLessDenseSwap(x, y, self, x+xDir, y+1)){}
 					}
 					case FIRE -> {
@@ -227,20 +239,12 @@ public class Game3 extends Game{
 	@Override
 	public void updateFrame(Graphics2D g2d){
 		g2d.setColor(colors[AIR]);
-		g2d.fillRect(0, 0, g2d.getClipBounds().width, g2d.getClipBounds().height);
+		g2d.fillRect(0, 0, width, height);
 		for (int x = 0; x < gridWidth; x++){
 			for (int y = 0; y < gridHeight; y++){
 				render(x, y, g2d);
 			}
 		}
-		g2d.setColor(Color.white);
-		g2d.setFont(new Font("Monospaced", Font.BOLD, 16));
-		double totalTime = (inputHandler.logicTime+inputHandler.renderTime+inputHandler.sleepTime);
-		g2d.drawString(String.format("%3.0f",inputHandler.fps),0,g2d.getFont().getSize());
-		g2d.drawString(String.format("logic  (us): %3.3f%%",inputHandler.logicTime*100.0/totalTime),0,2*g2d.getFont().getSize());
-		g2d.drawString(String.format("render (us): %3.1f%%",inputHandler.renderTime*100.0/totalTime),0,3*g2d.getFont().getSize());
-		g2d.drawString(String.format("sleep  (us): %3.1f%%",inputHandler.sleepTime*100.0/totalTime),0,4*g2d.getFont().getSize());
-		g2d.drawString(String.format("total  (s):%5.1f",totalTime/1_000_000_000),0 , 5 * g2d.getFont().getSize());
 	}
 	public void render(int x, int y, Graphics2D g2d){
 		int value = grid[y][x];
