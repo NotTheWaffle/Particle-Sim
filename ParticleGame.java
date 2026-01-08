@@ -6,7 +6,7 @@ import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class ParticleGame extends Game{
-	public final int radius = 4;
+	public final int radius = 8;
 	
 	private final Random random = ThreadLocalRandom.current();
 
@@ -201,7 +201,7 @@ public class ParticleGame extends Game{
 	public void fill(int x, int y, byte value){
 		for (int dx = -radius; dx <= radius; dx++){
 			for (int dy = -radius; dy <= radius; dy++){
-				if (dx * dx + dy * dy > radius * radius) continue;
+				if ((dx-.5) * (dx-.5) + (dy-.5) * (dy-.5) > radius * radius) continue;
 
 				int ax = x+dx;
 				int ay = y+dy;
