@@ -18,5 +18,6 @@ public class Game {
 		
 	}
 	public void updateFrame(Graphics2D g2d){
+		
 	}
 }
