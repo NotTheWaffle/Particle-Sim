@@ -50,11 +50,8 @@ public class GamePanel extends JPanel{
 				updateMousePosition(e);
 			}
 		});
-		addMouseWheelListener(new MouseWheelListener() {
-			@Override
-			public void mouseWheelMoved(MouseWheelEvent e){
-				input.mouseWheel += e.getPreciseWheelRotation();
-			}
+		addMouseWheelListener((MouseWheelEvent e) -> {
+			input.mouseWheel += e.getPreciseWheelRotation();
 		});
 		addKeyListener(new KeyAdapter() {
 			@Override

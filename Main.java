@@ -3,7 +3,9 @@ import java.util.concurrent.locks.LockSupport;
 
 public class Main {
 	public static void main(String[] args) {
-		new Thread(() -> runGame(new ParticleGame(256, 256), 60, 599)).start();
+		int size = 1024;
+		new Thread(()->{runGame(new ThreadedParticleGame(size, size), 60, 240);}).start();
+		runGame(new ParticleGame(size, size), 60, 240);
 	}
 	public static void runGame(final Game game, final double fps, final double tps){
 		final Window window = new Window(game);
@@ -12,15 +14,14 @@ public class Main {
 
 		double tickDeficit = 0;
 		while (true){
-			long targetTime = System.nanoTime() + frameLength;
-
+			final long targetTime = System.nanoTime() + frameLength;
+			
 			tickDeficit += tpf;
 			while (tickDeficit > 1){
 				game.tick();
 				tickDeficit--;
 			}
 			window.render();
-
 			long remaining = targetTime - System.nanoTime();
 			if (remaining > 200_000) {
 				LockSupport.parkNanos(remaining - 100_000);
